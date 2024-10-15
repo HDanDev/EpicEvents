@@ -21,5 +21,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+from controllers import main, collaborator
+
 if __name__ == '__main__':
     app.run(debug=True)

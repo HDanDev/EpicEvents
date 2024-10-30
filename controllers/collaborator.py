@@ -1,9 +1,11 @@
 from app import app, db
 from flask import jsonify, request
 from models.collaborators import Collaborator
+from utils import token_required
 
 
 @app.route('/collaborator', methods=['POST'])
+@token_required
 def add_collaborator():
     data = request.get_json()
     new_collaborator = Collaborator(first_name=data['first_name'], last_name=data['last_name'], email=data['email'])
@@ -27,6 +29,7 @@ def get_collaborator(id):
         return jsonify({"message": "Collaborator not found"}), 404
 
 @app.route('/collaborator/<int:id>', methods=['DELETE'])
+@token_required
 def delete_collaborator(id):
     collaborator = Collaborator.query.get(id)
     if collaborator:

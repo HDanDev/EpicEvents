@@ -11,8 +11,9 @@ class Collaborator(db.Model):
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False) 
     email = db.Column(db.String(120), unique=True, nullable=False)
-
-    role = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)    
+    password_hash = db.Column(db.String(128), nullable=False)
+    
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)    
     contracts = db.relationship('Contract', backref='commercial', lazy=True)
     events = db.relationship('Event', backref='support', lazy=True)
 
@@ -23,8 +24,7 @@ class Collaborator(db.Model):
 
 
     def __repr__(self):
-        return f"<Collaborator {self.name} ({self.role})>"
-    
+        return f"<Collaborator {self.full_name} (Role ID: {self.role_id})>"    
     
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')

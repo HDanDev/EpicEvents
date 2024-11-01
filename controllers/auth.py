@@ -1,9 +1,11 @@
 from flask import Blueprint, request, jsonify
 from app import db
 from models.collaborators import Collaborator
+from models.admin import Admin
 from utils import encode_auth_token
 
 auth_bp = Blueprint('auth', __name__)
+admin_auth_bp = Blueprint('admin_auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -32,6 +34,19 @@ def login():
 
     if collaborator and collaborator.check_password(password):
         auth_token = encode_auth_token(collaborator.id)
+        if auth_token:
+            return jsonify({'token': auth_token}), 200
+    return jsonify({'message': 'Invalid credentials'}), 401
+
+@admin_auth_bp.route('/admin-login', methods=['POST'])
+def admin_login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    admin = Admin.query.filter_by(email=email).first()
+    if admin and admin.check_password(password):
+        auth_token = encode_auth_token(admin.id)
         if auth_token:
             return jsonify({'token': auth_token}), 200
     return jsonify({'message': 'Invalid credentials'}), 401

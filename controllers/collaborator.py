@@ -1,11 +1,11 @@
 from app import app, db
 from flask import jsonify, request
 from models.collaborators import Collaborator
-from utils import token_required
+from utils import token_required, admin_required
 
 
 @app.route('/collaborator', methods=['POST'])
-@token_required
+@admin_required
 def add_collaborator():
     data = request.get_json()
     new_collaborator = Collaborator(first_name=data['first_name'], last_name=data['last_name'], email=data['email'])

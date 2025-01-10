@@ -1,14 +1,13 @@
 from app import app, db
 from flask import jsonify, request
 from models.collaborators import Collaborator
-from utils import token_required, admin_required
 
 
 @app.route('/collaborator', methods=['POST'])
-@admin_required
 def add_collaborator():
     data = request.get_json()
-    new_collaborator = Collaborator(first_name=data['first_name'], last_name=data['last_name'], email=data['email'])
+    new_collaborator = Collaborator(first_name=data['first_name'], last_name=data['last_name'], email=data['email'], role_id=data['role_id'])
+    new_collaborator.set_password(data['password'])
     
     db.session.add(new_collaborator)
     db.session.commit()
@@ -29,7 +28,6 @@ def get_collaborator(id):
         return jsonify({"message": "Collaborator not found"}), 404
 
 @app.route('/collaborator/<int:id>', methods=['DELETE'])
-@token_required
 def delete_collaborator(id):
     collaborator = Collaborator.query.get(id)
     if collaborator:

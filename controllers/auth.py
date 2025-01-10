@@ -1,28 +1,27 @@
 from flask import Blueprint, request, jsonify
 from app import db
 from models.collaborators import Collaborator
-from models.admin import Admin
 from utils import encode_auth_token
 
 auth_bp = Blueprint('auth', __name__)
 admin_auth_bp = Blueprint('admin_auth', __name__)
 
-@auth_bp.route('/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    role = data.get('role')  # Optional role assignment at registration
+# @auth_bp.route('/register', methods=['POST'])
+# def register():
+#     data = request.get_json()
+#     email = data.get('email')
+#     password = data.get('password')
+#     role = data.get('role')  # Optional role assignment at registration
 
-    if Collaborator.query.filter_by(email=email).first():
-        return jsonify({'message': 'Collaborator already exists'}), 400
+#     if Collaborator.query.filter_by(email=email).first():
+#         return jsonify({'message': 'Collaborator already exists'}), 400
 
-    collaborator = Collaborator(email=email, role=role)
-    collaborator.set_password(password)
-    db.session.add(collaborator)
-    db.session.commit()
+#     collaborator = Collaborator(email=email, role=role)
+#     collaborator.set_password(password)
+#     db.session.add(collaborator)
+#     db.session.commit()
 
-    return jsonify({'message': 'Collaborator registered successfully'}), 201
+#     return jsonify({'message': 'Collaborator registered successfully'}), 201
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -34,19 +33,6 @@ def login():
 
     if collaborator and collaborator.check_password(password):
         auth_token = encode_auth_token(collaborator.id)
-        if auth_token:
-            return jsonify({'token': auth_token}), 200
-    return jsonify({'message': 'Invalid credentials'}), 401
-
-@admin_auth_bp.route('/admin-login', methods=['POST'])
-def admin_login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-
-    admin = Admin.query.filter_by(email=email).first()
-    if admin and admin.check_password(password):
-        auth_token = encode_auth_token(admin.id)
         if auth_token:
             return jsonify({'token': auth_token}), 200
     return jsonify({'message': 'Invalid credentials'}), 401

@@ -1,6 +1,5 @@
 import logging
 from logging.config import fileConfig
-from models import clients, collaborators, contracts, events, roles
 
 from flask import current_app
 

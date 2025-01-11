@@ -4,7 +4,6 @@ from models.collaborators import Collaborator
 from utils import encode_auth_token
 
 auth_bp = Blueprint('auth', __name__)
-admin_auth_bp = Blueprint('admin_auth', __name__)
 
 # @auth_bp.route('/register', methods=['POST'])
 # def register():

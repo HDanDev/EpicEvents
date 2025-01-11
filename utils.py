@@ -11,12 +11,12 @@ load_dotenv()
 
 SECRET_KEY = os.getenv('HASH_SECRET_KEY')
 
-def token_required(f):
+def authentication_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth_header = request.headers.get('Authorization')
         if not auth_header:
-            return jsonify({'message': 'Token is missing'}), 403
+            return jsonify({'message': 'Authentication is required, please provide a valid token.'}), 403
 
         try:
             token = auth_header.split(" ")[1]
@@ -27,6 +27,33 @@ def token_required(f):
 
         return f(current_collaborator, *args, **kwargs)
     return decorated
+
+def role_restricted(role):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            auth_header = request.headers.get('Authorization')
+            if not auth_header or not auth_header.startswith('Bearer '):
+                return jsonify({'message': 'Token is missing or invalid'}), 403
+            
+            token = auth_header.split(" ")[1]
+            try:
+                token = auth_header.split(" ")[1]
+                collaborator_id = decode_auth_token(token)
+                current_collaborator = Collaborator.query.get(collaborator_id)
+                    
+            except:
+                return jsonify({'message': 'Token is invalid or expired'}), 403
+            
+            if not current_collaborator:
+                return jsonify({'message': 'User not found'}), 404
+
+            if current_collaborator.role_id != role.value :
+                return jsonify({'message': 'Permission denied'}), 403
+            
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 def encode_auth_token(user_id):
     try:

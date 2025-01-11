@@ -1,6 +1,8 @@
 from app import app, db
 from flask import jsonify, request
 from models.collaborators import Collaborator
+from models.roles import RoleEnum
+from utils import authentication_required, role_restricted
 
 
 @app.route('/collaborator', methods=['POST'])
@@ -15,6 +17,7 @@ def add_collaborator():
     return jsonify({"message": "Collaborator added successfully!"}), 201
 
 @app.route('/collaborators', methods=['GET'])
+@role_restricted(RoleEnum.MANAGEMENT)
 def get_collaborators():
     collaborators = Collaborator.query.all()
     return jsonify([collaborator.to_dict() for collaborator in collaborators])

@@ -1,4 +1,5 @@
 from app import db
+from enum import Enum
 
 
 class Role(db.Model):
@@ -11,3 +12,9 @@ class Role(db.Model):
 
     def __repr__(self):
         return f"<Role {self.name}>"
+
+
+class RoleEnum(Enum):
+    SALES = 0
+    SUPPORT = 1
+    MANAGEMENT = 2

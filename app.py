@@ -23,7 +23,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from controllers import main, collaborator
+from controllers import main, client, collaborator, contract, event 
 from controllers.auth import auth_bp
 
 app.register_blueprint(auth_bp, url_prefix='/auth')

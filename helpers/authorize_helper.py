@@ -22,13 +22,36 @@ def authentication_required(f):
             token = auth_header.split(" ")[1]
             collaborator_id = decode_auth_token(token)
             current_collaborator = Collaborator.query.get(collaborator_id)
+            kwargs['current_collaborator'] = current_collaborator
         except:
             return jsonify({'message': 'Token is invalid or expired'}), 403
 
-        return f(current_collaborator, *args, **kwargs)
+        return f(*args, **kwargs)
     return decorated
 
-def role_restricted(role):
+
+def self_user_restricted(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return jsonify({'message': 'Authentication is required, please provide a valid token.'}), 403
+
+        try:
+            token = auth_header.split(" ")[1]
+            collaborator_id = decode_auth_token(token)
+            target_user_id = kwargs.get('id')
+            current_collaborator = Collaborator.query.get(collaborator_id)
+            if current_collaborator.id == target_user_id :
+                kwargs['current_collaborator'] = current_collaborator
+                return f(*args, **kwargs)
+        except:
+            return jsonify({'message': 'Token is invalid or expired'}), 403
+
+        return jsonify({'message': 'Permission denied'}), 403
+    return decorated
+
+def role_restricted(role, is_self_edition_exception=False):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -47,6 +70,11 @@ def role_restricted(role):
             
             if not current_collaborator:
                 return jsonify({'message': 'User not found'}), 404
+            
+            target_user_id = kwargs.get('id')
+            if is_self_edition_exception and current_collaborator.id == target_user_id :
+                kwargs['current_collaborator'] = current_collaborator
+                return func(*args, **kwargs)
 
             if current_collaborator.role_id != role.value :
                 return jsonify({'message': 'Permission denied'}), 403

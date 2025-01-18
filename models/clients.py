@@ -24,3 +24,17 @@ class Client(db.Model):
     
     def __repr__(self):
         return f"<Client {self.full_name} from {self.company_name}>"
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "phone": self.phone,
+            "company_name": self.company_name,
+            "first_contact_date": self.first_contact_date.isoformat() if self.first_contact_date else None,
+            "last_contact_date": self.last_contact_date.isoformat() if self.last_contact_date else None,
+            "contracts": [contract.to_dict() for contract in self.contracts] if self.events else [],
+            "commercial_id": self.commercial_id,
+        }

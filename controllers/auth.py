@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app import db
 from models.collaborators import Collaborator
-from utils import encode_auth_token
+from helpers.authorize_helper import encode_auth_token
 
 auth_bp = Blueprint('auth', __name__)
 

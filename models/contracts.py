@@ -18,3 +18,15 @@ class Contract(db.Model):
     
     def __repr__(self):
         return f"<Contract {self.id} for Client {self.client.full_name}>"
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "costing": self.costing,
+            "remaining_due_payment": self.remaining_due_payment,
+            "creation_date": self.creation_date.isoformat() if self.creation_date else None,
+            "signed": self.signed,
+            "client_id": self.client_id,
+            "commercial_id": self.commercial_id,
+            "events": [event.to_dict() for event in self.events] if self.events else [],
+        }

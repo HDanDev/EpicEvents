@@ -2,19 +2,20 @@ from app import app, db
 from flask import jsonify, request
 from models.contracts import Contract
 from models.roles import RoleEnum
+from enums.relationships import RelationshipEnum
 from helpers.authorize_helper import authentication_required, role_restricted, self_user_restricted
 
 
 @app.route('/contract', methods=['POST'])
-@role_restricted(RoleEnum.MANAGEMENT)
-def add_contract():
+@role_restricted([RoleEnum.MANAGEMENT])
+def add_contract(current_collaborator=None):
     data = request.get_json()
     new_contract = Contract(
-        first_name=data['first_name'],
-        last_name=data['last_name'],
-        email=data['email'],
-        role_id=data['role_id'])
-    new_contract.set_password(data['password'])
+        costing=data['costing'],
+        remaining_due_payment=data['remaining_due_payment'],
+        signed=data['signed'],
+        client_id=data['client_id'],
+        commercial_id=data['commercial_id'])
     
     db.session.add(new_contract)
     try:
@@ -46,7 +47,7 @@ def get_contract(id, current_contract=None):
         return jsonify({"message": "Contract not found"}), 404
 
 @app.route('/contract/<int:id>', methods=['PATCH'])
-@role_restricted(RoleEnum.MANAGEMENT, True)
+@role_restricted([RoleEnum.MANAGEMENT], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
 def update_contract_patch(id):
     contract = Contract.query.get(id)
     if not contract:

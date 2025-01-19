@@ -2,11 +2,11 @@ from app import app, db
 from flask import jsonify, request
 from models.clients import Client
 from models.roles import RoleEnum
-from helpers.authorize_helper import authentication_required, role_restricted, user_related_restricted
+from helpers.authorize_helper import authentication_required, role_restricted
 
 
 @app.route('/client', methods=['POST'])
-@role_restricted(RoleEnum.SALES)
+@role_restricted([RoleEnum.SALES])
 def add_client(current_collaborator=None):
     data = request.get_json()
     new_client = Client(
@@ -40,7 +40,7 @@ def get_clients(current_collaborator=None):
 
 @app.route('/client/<int:id>', methods=['GET'])
 @authentication_required
-@user_related_restricted
+# @user_related_restricted
 def get_client(id, current_collaborator=None):
     client = Client.query.get(id)
     if client:
@@ -49,8 +49,8 @@ def get_client(id, current_collaborator=None):
         return jsonify({"message": "Client not found"}), 404
 
 @app.route('/client/<int:id>', methods=['PATCH'])
-@role_restricted(RoleEnum.SALES, True)
-@user_related_restricted
+@role_restricted([RoleEnum.SALES, True])
+# @user_related_restricted
 def update_client_patch(id, current_collaborator=None):
     client = Client.query.get(id)
     if not client:
@@ -84,8 +84,8 @@ def update_client_patch(id, current_collaborator=None):
         return jsonify({"message": "Error updating client", "error": str(e)}), 500
 
 @app.route('/client/<int:id>', methods=['PUT'])
-@role_restricted(RoleEnum.SALES, True)
-@user_related_restricted
+@role_restricted([RoleEnum.SALES], True)
+# @user_related_restricted
 def update_client_put(id, current_collaborator=None):
     required_fields = ['first_name', 'last_name', 'email', 'phone', 'company_name', 'commercial_id']
 
@@ -118,8 +118,8 @@ def update_client_put(id, current_collaborator=None):
         return jsonify({"message": "Error updating client", "error": str(e)}), 500
 
 @app.route('/client/<int:id>', methods=['DELETE'])
-@role_restricted(RoleEnum.SALES, True)
-@user_related_restricted
+@role_restricted([RoleEnum.SALES], True)
+# @user_related_restricted
 def delete_client(id, current_collaborator=None):
     client = Client.query.get(id)
     if client:

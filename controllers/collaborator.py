@@ -6,7 +6,7 @@ from helpers.authorize_helper import authentication_required, role_restricted, s
 
 
 @app.route('/collaborator', methods=['POST'])
-@role_restricted(RoleEnum.MANAGEMENT)
+@role_restricted([RoleEnum.MANAGEMENT])
 def add_collaborator(current_collaborator=None):
     data = request.get_json()
     new_collaborator = Collaborator(
@@ -46,7 +46,7 @@ def get_collaborator(id, current_collaborator=None):
         return jsonify({"message": "Collaborator not found"}), 404
 
 @app.route('/collaborator/<int:id>', methods=['PATCH'])
-@role_restricted(RoleEnum.MANAGEMENT, True)
+@role_restricted([RoleEnum.MANAGEMENT], True)
 def update_collaborator_patch(id, current_collaborator=None):
     collaborator = Collaborator.query.get(id)
     if not collaborator:
@@ -97,7 +97,7 @@ def update_password(id):
         return jsonify({"message": "Error updating Password", "error": str(e)}), 500
 
 @app.route('/collaborator/<int:id>', methods=['PUT'])
-@role_restricted(RoleEnum.MANAGEMENT, True)
+@role_restricted([RoleEnum.MANAGEMENT], True)
 def update_collaborator_put(id, current_collaborator=None):
     required_fields = ['first_name', 'last_name', 'email', 'role_id']
 
@@ -128,7 +128,7 @@ def update_collaborator_put(id, current_collaborator=None):
         return jsonify({"message": "Error updating collaborator", "error": str(e)}), 500
 
 @app.route('/collaborator/<int:id>', methods=['DELETE'])
-@role_restricted(RoleEnum.MANAGEMENT, True)
+@role_restricted([RoleEnum.MANAGEMENT], True)
 def delete_collaborator(id, current_collaborator=None):
     collaborator = Collaborator.query.get(id)
     if collaborator:

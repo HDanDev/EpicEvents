@@ -2,7 +2,7 @@ from app import app, db
 from flask import jsonify, request
 from models.clients import Client
 from models.roles import RoleEnum
-from helpers.authorize_helper import authentication_required, role_restricted, self_user_restricted
+from helpers.authorize_helper import authentication_required, role_restricted, user_related_restricted
 
 
 @app.route('/client', methods=['POST'])
@@ -15,6 +15,8 @@ def add_client(current_collaborator=None):
         email=data['email'],
         phone=data['phone'],
         company_name=data['company_name'])
+    
+    new_client.commercial_id = current_collaborator.id
     
     db.session.add(new_client)
     try:
@@ -38,6 +40,7 @@ def get_clients(current_collaborator=None):
 
 @app.route('/client/<int:id>', methods=['GET'])
 @authentication_required
+@user_related_restricted
 def get_client(id, current_collaborator=None):
     client = Client.query.get(id)
     if client:
@@ -47,7 +50,8 @@ def get_client(id, current_collaborator=None):
 
 @app.route('/client/<int:id>', methods=['PATCH'])
 @role_restricted(RoleEnum.SALES, True)
-def update_client_patch(id):
+@user_related_restricted
+def update_client_patch(id, current_collaborator=None):
     client = Client.query.get(id)
     if not client:
         return jsonify({"message": "Client not found"}), 404
@@ -65,8 +69,12 @@ def update_client_patch(id):
         if existing_client and existing_client.id != id:
             return jsonify({"message": "Email already in use"}), 400
         client.email = data['email']
-    if 'role_id' in data:
-        client.role_id = data['role_id']
+    if 'phone' in data:
+        client.phone = data['phone']
+    if 'company_name' in data:
+        client.company_name = data['company_name']
+    if 'commercial_id' in data:
+        client.commercial_id = data['commercial_id']
 
     try:
         db.session.commit()
@@ -77,8 +85,9 @@ def update_client_patch(id):
 
 @app.route('/client/<int:id>', methods=['PUT'])
 @role_restricted(RoleEnum.SALES, True)
-def update_client_put(id):
-    required_fields = ['first_name', 'last_name', 'email', 'role_id']
+@user_related_restricted
+def update_client_put(id, current_collaborator=None):
+    required_fields = ['first_name', 'last_name', 'email', 'phone', 'company_name', 'commercial_id']
 
     data = request.get_json()
 
@@ -97,7 +106,9 @@ def update_client_put(id):
     client.first_name = data['first_name']
     client.last_name = data['last_name']
     client.email = data['email']
-    client.role_id = data['role_id']
+    client.phone = data['phone']
+    client.company_name = data['company_name']
+    client.commercial_id = data['commercial_id']
 
     try:
         db.session.commit()
@@ -108,7 +119,8 @@ def update_client_put(id):
 
 @app.route('/client/<int:id>', methods=['DELETE'])
 @role_restricted(RoleEnum.SALES, True)
-def delete_client(id):
+@user_related_restricted
+def delete_client(id, current_collaborator=None):
     client = Client.query.get(id)
     if client:
         db.session.delete(client)

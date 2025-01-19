@@ -35,6 +35,6 @@ class Client(db.Model):
             "company_name": self.company_name,
             "first_contact_date": self.first_contact_date.isoformat() if self.first_contact_date else None,
             "last_contact_date": self.last_contact_date.isoformat() if self.last_contact_date else None,
-            "contracts": [contract.to_dict() for contract in self.contracts] if self.events else [],
+            "contracts": [contract.to_dict() for contract in self.contracts] if self.contracts else [],
             "commercial_id": self.commercial_id,
         }

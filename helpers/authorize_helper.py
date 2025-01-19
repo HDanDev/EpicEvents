@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from functools import wraps
 from flask import request, jsonify
 from models.collaborators import Collaborator
+from models.clients import Client
 
 
 load_dotenv()
@@ -64,6 +65,7 @@ def role_restricted(role, is_self_edition_exception=False):
                 token = auth_header.split(" ")[1]
                 collaborator_id = decode_auth_token(token)
                 current_collaborator = Collaborator.query.get(collaborator_id)
+                kwargs['current_collaborator'] = current_collaborator
                     
             except:
                 return jsonify({'message': 'Token is invalid or expired'}), 403
@@ -82,6 +84,36 @@ def role_restricted(role, is_self_edition_exception=False):
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
+def user_related_restricted(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({'message': 'Token is missing or invalid'}), 403
+        
+        token = auth_header.split(" ")[1]
+        try:
+            token = auth_header.split(" ")[1]
+            collaborator_id = decode_auth_token(token)
+            current_collaborator = Collaborator.query.get(collaborator_id)
+            print(collaborator_id)
+            print(current_collaborator)
+            kwargs['current_collaborator'] = current_collaborator
+                
+        except:
+            return jsonify({'message': 'Token is invalid or expired'}), 403
+        
+        if not current_collaborator:
+            return jsonify({'message': 'User not found'}), 404
+        
+        target_user_id = kwargs.get('id')
+        if not target_user_id or not is_client_assigned_to_collaborator(target_user_id, collaborator_id):
+            return jsonify({'message': 'Permission denied'}), 403
+        
+        kwargs['current_collaborator'] = current_collaborator
+        return func(*args, **kwargs)            
+    return wrapper
 
 def encode_auth_token(user_id):
     try:
@@ -102,3 +134,6 @@ def decode_auth_token(auth_token):
         return 'Signature expired. Please log in again.'
     except jwt.InvalidTokenError:
         return 'Invalid token. Please log in again.'
+
+def is_client_assigned_to_collaborator(client_id, collaborator_id):
+    return Client.query.filter_by(id=client_id, commercial_id=collaborator_id).first() is not None

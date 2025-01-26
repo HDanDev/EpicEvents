@@ -30,3 +30,10 @@ class Contract(db.Model):
             "commercial_id": self.commercial_id,
             "events": [event.to_dict() for event in self.events] if self.events else [],
         }
+        
+    def minimal_to_dict(self):
+        return {
+            "id": self.id,
+            "client_id": self.client_id,
+            "commercial_id": self.commercial_id
+        }

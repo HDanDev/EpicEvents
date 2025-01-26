@@ -38,3 +38,12 @@ class Client(db.Model):
             "contracts": [contract.to_dict() for contract in self.contracts] if self.contracts else [],
             "commercial_id": self.commercial_id,
         }
+        
+    def minimal_to_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "commercial_id": self.commercial_id
+        }

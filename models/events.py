@@ -30,3 +30,12 @@ class Event(db.Model):
             "contract_id": self.contract_id,
             "support_id": self.support_id,
         }
+        
+    def minimal_to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "end_date": self.end_date.isoformat() if self.end_date else None,
+            "contract_id": self.contract_id,
+            "support_id": self.support_id
+        }

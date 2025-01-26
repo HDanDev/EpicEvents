@@ -6,8 +6,9 @@ from functools import wraps
 from flask import request, jsonify
 from models.collaborators import Collaborator
 from models.clients import Client
+from models.contracts import Contract
 from models.roles import RoleEnum
-from enums.relationships import RelationshipEnum
+from enums.relationships_enum import RelationshipEnum
 
 
 load_dotenv()
@@ -70,7 +71,6 @@ def role_restricted(roles, is_self_edition_exception=False, relationType=Relatio
                 return func(*args, **kwargs)
             
             role = RoleEnum(current_collaborator.role_id)
-
             if (role not in roles):
                 return jsonify({'message': 'Permission denied'}), 403
 
@@ -123,10 +123,14 @@ def relationship_check_switch(current_collaborator, relationship_enum=Relationsh
     if relationship_enum == RelationshipEnum.NONE:
         return None
     elif RoleEnum(current_collaborator.role_id) == RoleEnum.SALES and relationship_enum == RelationshipEnum.COLLABORATOR_CLIENT:
-        collaborator_client_relationship_check
+        return collaborator_client_relationship_check(current_collaborator, *args, **kwargs)
 
-def collaborator_client_relationship_check(collaborator, *args, **kwargs):
-    target_user_id = kwargs.get('id')
-    if not target_user_id or Client.query.filter_by(id=target_user_id, commercial_id=collaborator).first() is None:
-        return jsonify({'message': 'Permission denied'}), 403
+def collaborator_client_relationship_check(current_collaborator, *args, **kwargs):
+    data = request.get_json()
+    contract = Contract.query.get(data.get('contract_id'))
+    if not contract:
+        return jsonify({'message': 'The contract_id field is mandatory to create an event'}), 403
+    
+    if Client.query.filter_by(id=contract.client_id, commercial_id=current_collaborator.id).first() is None:
+        return jsonify({'message': 'Permission denied, you only have the right to create events for clients you are assigned to'}), 403
     return None

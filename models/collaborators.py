@@ -40,3 +40,12 @@ class Collaborator(db.Model):
             "email": self.email,
             "role_id": self.role_id,
         }
+        
+    def minimal_to_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "role_id": self.role_id,
+        }

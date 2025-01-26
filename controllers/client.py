@@ -2,13 +2,22 @@ from app import app, db
 from flask import jsonify, request
 from models.clients import Client
 from models.roles import RoleEnum
+from enums.relationships_enum import RelationshipEnum
 from helpers.authorize_helper import authentication_required, role_restricted
+from helpers.validator_helper import ValidatorHelper
+from enums.model_type_enum import ModelTypeEnum
 
 
 @app.route('/client', methods=['POST'])
 @role_restricted([RoleEnum.SALES])
 def add_client(current_collaborator=None):
     data = request.get_json()
+    data_validator = ValidatorHelper(ModelTypeEnum.CLIENT, data)
+    data_validator.validate_data()
+    
+    if not data_validator.is_valid():
+        return jsonify({"message": "Validation errors", "errors": data_validator.error_messages}), 400
+    
     new_client = Client(
         first_name=data['first_name'],
         last_name=data['last_name'],
@@ -36,10 +45,10 @@ def add_client(current_collaborator=None):
 @authentication_required
 def get_clients(current_collaborator=None):
     clients = Client.query.all()
-    return jsonify([client.to_dict() for client in clients])
+    return jsonify([client.minimal_to_dict() for client in clients])
 
 @app.route('/client/<int:id>', methods=['GET'])
-@authentication_required
+@role_restricted([RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
 # @user_related_restricted
 def get_client(id, current_collaborator=None):
     client = Client.query.get(id)
@@ -49,7 +58,7 @@ def get_client(id, current_collaborator=None):
         return jsonify({"message": "Client not found"}), 404
 
 @app.route('/client/<int:id>', methods=['PATCH'])
-@role_restricted([RoleEnum.SALES, True])
+@role_restricted([RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
 # @user_related_restricted
 def update_client_patch(id, current_collaborator=None):
     client = Client.query.get(id)
@@ -57,6 +66,12 @@ def update_client_patch(id, current_collaborator=None):
         return jsonify({"message": "Client not found"}), 404
 
     data = request.get_json()
+    data_validator = ValidatorHelper(ModelTypeEnum.CLIENT, data)
+    data_validator.validate_data()
+    
+    if not data_validator.is_valid():
+        return jsonify({"message": "Validation errors", "errors": data_validator.error_messages}), 400
+    
     if not data:
         return jsonify({"message": "Invalid or missing data"}), 400
 
@@ -84,12 +99,17 @@ def update_client_patch(id, current_collaborator=None):
         return jsonify({"message": "Error updating client", "error": str(e)}), 500
 
 @app.route('/client/<int:id>', methods=['PUT'])
-@role_restricted([RoleEnum.SALES], True)
+@role_restricted([RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
 # @user_related_restricted
 def update_client_put(id, current_collaborator=None):
     required_fields = ['first_name', 'last_name', 'email', 'phone', 'company_name', 'commercial_id']
 
     data = request.get_json()
+    data_validator = ValidatorHelper(ModelTypeEnum.CLIENT, data)
+    data_validator.validate_data()
+    
+    if not data_validator.is_valid():
+        return jsonify({"message": "Validation errors", "errors": data_validator.error_messages}), 400
 
     missing_fields = [field for field in required_fields if field not in data]
     if missing_fields:
@@ -118,7 +138,7 @@ def update_client_put(id, current_collaborator=None):
         return jsonify({"message": "Error updating client", "error": str(e)}), 500
 
 @app.route('/client/<int:id>', methods=['DELETE'])
-@role_restricted([RoleEnum.SALES], True)
+@role_restricted([RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
 # @user_related_restricted
 def delete_client(id, current_collaborator=None):
     client = Client.query.get(id)

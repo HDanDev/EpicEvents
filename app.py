@@ -3,22 +3,17 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
+from config import TestConfig, Config
 
 load_dotenv()
 
 app = Flask(__name__)
+env = os.getenv('FLASK_ENV', 'development')
 
-username = os.getenv('DB_USERNAME')
-password = os.getenv('DB_PASSWORD')
-db_name = os.getenv('DB_NAME')
-db_host = os.getenv('DB_HOST')
-db_admin = os.getenv('DB_ADMIN')
-db_admin_password = os.getenv('DB_ADMIN_PASSWORD')
-
-app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{username}:{password}@{db_host}/{db_name}'
-# app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{db_admin}:{db_admin_password}@{db_host}/{db_name}'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+if env == 'testing':
+    app.config.from_object(TestConfig)
+else:
+    app.config.from_object(Config)
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)

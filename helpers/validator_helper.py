@@ -1,5 +1,6 @@
 import re
 from flask import jsonify
+from app import db
 from datetime import datetime
 from models.clients import Client
 from models.collaborators import Collaborator
@@ -200,7 +201,7 @@ class ValidatorHelper:
             self.add_error(field, "Invalid foreign key")
             
     def entity_exists_check(self, field, entity_id, model, role_type_enum=None):
-        entity = model.query.get(entity_id)
+        entity = db.session.get(model, entity_id)
         if entity:
             if role_type_enum is not None and role_type_enum.value != entity.role_id:
                 self.add_error(field, "The given collaborator is not of the authorized role")

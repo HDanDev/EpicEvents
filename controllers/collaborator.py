@@ -47,7 +47,7 @@ def get_collaborators(current_collaborator=None):
 @app.route('/collaborator/<int:id>', methods=['GET'])
 @authentication_required
 def get_collaborator(id, current_collaborator=None):
-    collaborator = Collaborator.query.get(id)
+    collaborator = db.session.get(Collaborator, id)
     if collaborator:
         return jsonify(collaborator.to_dict())
     else:
@@ -56,7 +56,7 @@ def get_collaborator(id, current_collaborator=None):
 @app.route('/collaborator/<int:id>', methods=['PATCH'])
 @role_restricted([RoleEnum.MANAGEMENT], True)
 def update_collaborator_patch(id, current_collaborator=None):
-    collaborator = Collaborator.query.get(id)
+    collaborator = db.session.get(Collaborator, id)
     if not collaborator:
         return jsonify({"message": "Collaborator not found"}), 404
 
@@ -91,8 +91,8 @@ def update_collaborator_patch(id, current_collaborator=None):
     
 @app.route('/collaborator/update-password/<int:id>', methods=['PATCH'])
 @self_user_restricted
-def update_password(id):
-    collaborator = Collaborator.query.get(id)
+def update_password(id, current_collaborator=None):
+    collaborator = db.session.get(Collaborator, id)
     if not collaborator:
         return jsonify({"message": "Collaborator not found"}), 404
 
@@ -132,7 +132,7 @@ def update_collaborator_put(id, current_collaborator=None):
     if missing_fields:
         return jsonify({"message": f"Missing fields: {', '.join(missing_fields)}"}), 400
 
-    collaborator = Collaborator.query.get(id)
+    collaborator = db.session.get(Collaborator, id)
     if not collaborator:
         return jsonify({"message": "Collaborator not found"}), 404
     
@@ -155,7 +155,7 @@ def update_collaborator_put(id, current_collaborator=None):
 @app.route('/collaborator/<int:id>', methods=['DELETE'])
 @role_restricted([RoleEnum.MANAGEMENT], True)
 def delete_collaborator(id, current_collaborator=None):
-    collaborator = Collaborator.query.get(id)
+    collaborator = db.session.get(Collaborator, id)
     if collaborator:
         db.session.delete(collaborator)
         try:

@@ -15,6 +15,6 @@ class Role(db.Model):
 
 
 class RoleEnum(Enum):
-    SALES = 0
-    SUPPORT = 1
-    MANAGEMENT = 2
+    SALES = 1
+    SUPPORT = 2
+    MANAGEMENT = 3

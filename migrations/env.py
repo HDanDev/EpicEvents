@@ -2,6 +2,7 @@ import logging
 from logging.config import fileConfig
 
 from flask import current_app
+import os
 
 from alembic import context
 
@@ -14,6 +15,8 @@ config = context.config
 fileConfig(config.config_file_name)
 logger = logging.getLogger('alembic.env')
 
+if os.getenv("FLASK_ENV") != "testing":
+    raise Exception("DO NOT run downgrade on production!")
 
 def get_engine():
     try:

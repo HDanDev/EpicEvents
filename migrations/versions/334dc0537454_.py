@@ -7,6 +7,8 @@ Create Date: 2025-01-10 17:07:54.201041
 """
 from alembic import op
 import sqlalchemy as sa
+import os
+from models import Collaborator
 
 
 # revision identifiers, used by Alembic.
@@ -75,6 +77,24 @@ def upgrade():
     sa.ForeignKeyConstraint(['support_id'], ['collaborators.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.execute("""
+        INSERT INTO roles (id, name) VALUES 
+        (1, 'Sales'), 
+        (2, 'Support'), 
+        (3, 'Management');
+    """)
+    
+    # Insert collaborators using bulk insert (Safer and better)
+    op.bulk_insert(
+        Collaborator.__table__,  # Use the table from SQLAlchemy model
+        [
+            {'id': 1, 'first_name': 'Main', 'last_name': 'Manager', 
+             'email': os.getenv('MAIN_MANAGER_EMAIL'), 
+             'password_hash': os.getenv('MAIN_MANAGER_HASHED_PASSWORD'), 
+             'role_id': 3}
+        ]
+    )
+    
     # ### end Alembic commands ###
 
 

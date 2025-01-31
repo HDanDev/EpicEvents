@@ -1,5 +1,6 @@
 import jwt
 import os
+from app import db
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
 from functools import wraps
@@ -35,7 +36,7 @@ def get_authenticated_collaborator():
     try:
         token = auth_header.split(" ")[1]
         collaborator_id = decode_auth_token(token)
-        current_collaborator = Collaborator.query.get(collaborator_id)
+        current_collaborator = db.session.get(Collaborator, collaborator_id)
         if not current_collaborator:
             return None, jsonify({'message': 'User not found'}), 404
         return current_collaborator, None, None
@@ -127,7 +128,7 @@ def relationship_check_switch(current_collaborator, relationship_enum=Relationsh
 
 def collaborator_client_relationship_check(current_collaborator, *args, **kwargs):
     data = request.get_json()
-    contract = Contract.query.get(data.get('contract_id'))
+    contract = db.session.get(Contract, data.get('contract_id'))
     if not contract:
         return jsonify({'message': 'The contract_id field is mandatory to create an event'}), 403
     

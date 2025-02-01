@@ -49,9 +49,8 @@ def get_clients(current_collaborator=None):
 
 @app.route('/client/<int:id>', methods=['GET'])
 @role_restricted([RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
-# @user_related_restricted
 def get_client(id, current_collaborator=None):
-    client = Client.query.get(id)
+    client = db.session.get(Client, id)
     if client:
         return jsonify(client.to_dict())
     else:
@@ -59,9 +58,8 @@ def get_client(id, current_collaborator=None):
 
 @app.route('/client/<int:id>', methods=['PATCH'])
 @role_restricted([RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
-# @user_related_restricted
 def update_client_patch(id, current_collaborator=None):
-    client = Client.query.get(id)
+    client = db.session.get(Client, id)
     if not client:
         return jsonify({"message": "Client not found"}), 404
 
@@ -100,7 +98,6 @@ def update_client_patch(id, current_collaborator=None):
 
 @app.route('/client/<int:id>', methods=['PUT'])
 @role_restricted([RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
-# @user_related_restricted
 def update_client_put(id, current_collaborator=None):
     required_fields = ['first_name', 'last_name', 'email', 'phone', 'company_name', 'commercial_id']
 
@@ -115,7 +112,7 @@ def update_client_put(id, current_collaborator=None):
     if missing_fields:
         return jsonify({"message": f"Missing fields: {', '.join(missing_fields)}"}), 400
 
-    client = Client.query.get(id)
+    client = db.session.get(Client, id)
     if not client:
         return jsonify({"message": "Client not found"}), 404
     
@@ -139,9 +136,8 @@ def update_client_put(id, current_collaborator=None):
 
 @app.route('/client/<int:id>', methods=['DELETE'])
 @role_restricted([RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
-# @user_related_restricted
 def delete_client(id, current_collaborator=None):
-    client = Client.query.get(id)
+    client = db.session.get(Client, id)
     if client:
         db.session.delete(client)
         try:

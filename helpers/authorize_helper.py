@@ -125,8 +125,17 @@ def relationship_check_switch(current_collaborator, relationship_enum=Relationsh
         return None
     elif RoleEnum(current_collaborator.role_id) == RoleEnum.SALES and relationship_enum == RelationshipEnum.COLLABORATOR_CLIENT:
         return collaborator_client_relationship_check(current_collaborator, *args, **kwargs)
+    elif RoleEnum(current_collaborator.role_id) == RoleEnum.SALES and relationship_enum == RelationshipEnum.COLLABORATOR_CONTRACT:
+        return collaborator_contract_relationship_check(current_collaborator, *args, **kwargs)
 
 def collaborator_client_relationship_check(current_collaborator, *args, **kwargs):
+    client_id = kwargs.get('id')
+    
+    if Client.query.filter_by(id=client_id, commercial_id=current_collaborator.id).first() is None:
+        return jsonify({'message': 'Permission denied, you only have the right to create events for clients you are assigned to'}), 403
+    return None
+
+def collaborator_contract_relationship_check(current_collaborator, *args, **kwargs):
     data = request.get_json()
     contract = db.session.get(Contract, data.get('contract_id'))
     if not contract:

@@ -10,8 +10,7 @@ from enums.model_type_enum import ModelTypeEnum
 
 
 @app.route('/event', methods=['POST'])
-# restrict to related user with signed contract
-@role_restricted([RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
+@role_restricted([RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CONTRACT)
 def add_event(current_collaborator=None):
     data = request.get_json()
     data_validator = ValidatorHelper(ModelTypeEnum.EVENT, data)
@@ -20,23 +19,15 @@ def add_event(current_collaborator=None):
     if not data_validator.is_valid():
         return jsonify({"message": "Validation errors", "errors": data_validator.error_messages}), 400
     
-    # client_id = data.get('client_id')
-    # contract_id = data.get('contract_id')
-    
-    # contract = Contract.query.filter_by(id=contract_id, commercial_id=current_collaborator.id, signed=True).first()
-    
-    # if not contract:
-    #     return jsonify({"message": "Invalid or unsigned contract"}), 403
-    
     new_event = Event(
         name=data['name'],
-        start_date=data['start_date'],
-        end_date=data['end_date'],
         location=data['location'],
         attendees=data['attendees'],
         notes=data['notes'],
         contract_id=data['contract_id']
         )
+    new_event.set_start_date(data['start_date'])
+    new_event.set_end_date(data['end_date'])
     
     db.session.add(new_event)
     try:
@@ -87,7 +78,7 @@ def get_events(current_collaborator=None):
 @app.route('/event/<int:id>', methods=['GET'])
 @role_restricted([RoleEnum.SUPPORT])
 def get_event(id, current_collaborator=None):
-    event = Event.query.get(id)
+    event = db.session.get(Event, id)
     if event:
         return jsonify(event.to_dict())
     else:
@@ -96,7 +87,7 @@ def get_event(id, current_collaborator=None):
 @app.route('/event/<int:id>', methods=['PATCH'])
 @role_restricted([RoleEnum.MANAGEMENT, RoleEnum.SUPPORT], True)
 def update_event_patch(id, current_collaborator=None):
-    event = Event.query.get(id)
+    event = db.session.get(Event, id)
     if not event:
         return jsonify({"message": "Event not found"}), 404
 
@@ -114,9 +105,9 @@ def update_event_patch(id, current_collaborator=None):
         if 'name' in data:
             event.name = data['name']
         if 'start_date' in data:
-            event.start_date = data['start_date']
+            event.set_start_date(data['start_date'])
         if 'end_date' in data:
-            event.end_date = data['end_date']
+            event.set_end_date(data['end_date'])
         if 'location' in data:
             event.location = data['location']
         if 'attendees' in data:
@@ -138,7 +129,7 @@ def update_event_patch(id, current_collaborator=None):
 
 @app.route('/event/<int:id>', methods=['PUT'])
 @role_restricted([RoleEnum.SUPPORT], True)
-def update_event_put(id):
+def update_event_put(id, current_collaborator=None):
     required_fields = [
         'name',
         'start_date',
@@ -161,7 +152,7 @@ def update_event_put(id):
     if missing_fields:
         return jsonify({"message": f"Missing fields: {', '.join(missing_fields)}"}), 400
 
-    event = Event.query.get(id)
+    event = db.session.get(Event, id)
     if not event:
         return jsonify({"message": "Event not found"}), 404
     
@@ -170,8 +161,8 @@ def update_event_put(id):
         return jsonify({"message": "Email already in use"}), 400
 
     event.name = data['name']
-    event.start_date = data['start_date']
-    event.end_date = data['end_date']
+    event.set_start_date(data['start_date'])
+    event.set_end_date(data['end_date'])
     event.location = data['location']
     event.attendees = data['attendees']
     event.notes = data['notes']
@@ -187,8 +178,8 @@ def update_event_put(id):
 
 @app.route('/event/<int:id>', methods=['DELETE'])
 @role_restricted([RoleEnum.SALES], True)
-def delete_event(id):
-    event = Event.query.get(id)
+def delete_event(id, current_collaborator=None):
+    event = db.session.get(Event, id)
     if event:
         db.session.delete(event)
         try:

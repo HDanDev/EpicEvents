@@ -75,8 +75,8 @@ def get_contracts(current_collaborator=None):
 
 @app.route('/contract/<int:id>', methods=['GET'])
 @role_restricted([RoleEnum.MANAGEMENT, RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
-def get_contract(id, current_contract=None):
-    contract = Contract.query.get(id)
+def get_contract(id, current_collaborator=None):
+    contract = db.session.get(Contract, id)
     if contract:
         return jsonify(contract.to_dict())
     else:
@@ -85,7 +85,7 @@ def get_contract(id, current_contract=None):
 @app.route('/contract/<int:id>', methods=['PATCH'])
 @role_restricted([RoleEnum.MANAGEMENT, RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
 def update_contract_patch(id, current_collaborator=None):
-    contract = Contract.query.get(id)
+    contract = db.session.get(Contract, id)
     if not contract:
         return jsonify({"message": "Contract not found"}), 404
 
@@ -121,7 +121,7 @@ def update_contract_patch(id, current_collaborator=None):
 
 @app.route('/contract/<int:id>', methods=['PUT'])
 @role_restricted([RoleEnum.MANAGEMENT, RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
-def update_contract_put(id):
+def update_contract_put(id, current_collaborator=None):
     required_fields = [
         'costing',
         'remaining_due_payment',
@@ -142,7 +142,7 @@ def update_contract_put(id):
     if missing_fields:
         return jsonify({"message": f"Missing fields: {', '.join(missing_fields)}"}), 400
 
-    contract = Contract.query.get(id)
+    contract = db.session.get(Contract, id)
     if not contract:
         return jsonify({"message": "Contract not found"}), 404
     
@@ -169,8 +169,8 @@ def update_contract_put(id):
 
 @app.route('/contract/<int:id>', methods=['DELETE'])
 @role_restricted([RoleEnum.MANAGEMENT, RoleEnum.SALES], relationType=RelationshipEnum.COLLABORATOR_CLIENT)
-def delete_contract(id):
-    contract = Contract.query.get(id)
+def delete_contract(id, current_collaborator=None):
+    contract = db.session.get(Contract, id)
     if contract:
         db.session.delete(contract)
         try:

@@ -1,4 +1,5 @@
 from app import db
+from datetime import datetime
 
 
 class Event(db.Model):
@@ -17,6 +18,12 @@ class Event(db.Model):
     
     def __repr__(self):
         return f"<Event {self.name} for {self.contract.client.full_name}>"
+    
+    def set_start_date(self, date):
+        self.start_date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+        
+    def set_end_date(self, date):
+        self.end_date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
 
     def to_dict(self):
         return {

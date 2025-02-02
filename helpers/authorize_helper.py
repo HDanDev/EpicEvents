@@ -85,21 +85,6 @@ def role_restricted(roles, is_self_edition_exception=False, relationType=Relatio
         return wrapper
     return decorator
 
-# def user_related_restricted(func):
-#     @wraps(func)
-#     def wrapper(*args, **kwargs):
-#         current_collaborator, error_response, status_code = get_authenticated_collaborator()
-#         if error_response:
-#             return error_response, status_code
-        
-#         target_user_id = kwargs.get('id')
-#         if not target_user_id or not is_client_assigned_to_collaborator(target_user_id, current_collaborator):
-#             return jsonify({'message': 'Permission denied'}), 403
-        
-#         kwargs['current_collaborator'] = current_collaborator
-#         return func(*args, **kwargs)            
-#     return wrapper
-
 def encode_auth_token(user_id):
     try:
         payload = {

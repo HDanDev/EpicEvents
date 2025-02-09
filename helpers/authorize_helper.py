@@ -117,15 +117,27 @@ def collaborator_client_relationship_check(current_collaborator, *args, **kwargs
     client_id = kwargs.get('id')
     
     if Client.query.filter_by(id=client_id, commercial_id=current_collaborator.id).first() is None:
-        return jsonify({'message': 'Permission denied, you only have the right to create events for clients you are assigned to'}), 403
+        return jsonify({'message': 'Permission denied, you only have the right to interact with clients you are assigned to'}), 403
     return None
 
 def collaborator_contract_relationship_check(current_collaborator, *args, **kwargs):
     data = request.get_json()
-    contract = db.session.get(Contract, data.get('contract_id'))
+    contract = None
+
+    contract_id = data.get('contract_id')
+
+    if contract_id:
+        contract = db.session.get(Contract, contract_id)
+
     if not contract:
         return jsonify({'message': 'The contract_id field is mandatory to create an event'}), 403
-    
-    if Client.query.filter_by(id=contract.client_id, commercial_id=current_collaborator.id).first() is None:
+
+    if not contract.signed:
+        return jsonify({'message': 'Permission denied. Event creation is only available to clients with a signed contract'}), 403
+
+    client = Client.query.filter_by(id=contract.client_id, commercial_id=current_collaborator.id).first()
+
+    if client is None:
         return jsonify({'message': 'Permission denied, you only have the right to create events for clients you are assigned to'}), 403
+
     return None

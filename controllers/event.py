@@ -54,21 +54,22 @@ def get_events(current_collaborator=None):
         data_attendees = request.args.get('attendees')
         data_contract_id = request.args.get('contract_id')
         data_support_id = request.args.get('support_id')
+        query = Event.query.all()
         
         if data_name is not None:    
-            query = Contract.query.filter_by(name=data_name)
+            query = Event.query.filter_by(name=data_name)
         if data_start_date is not None:    
-            query = Contract.query.filter_by(start_date=data_start_date)
+            query = Event.query.filter_by(start_date=data_start_date)
         if data_end_date is not None:    
-            query = Contract.query.filter_by(end_date=data_end_date)
+            query = Event.query.filter_by(end_date=data_end_date)
         if data_location is not None:    
-            query = Contract.query.filter_by(location=data_location)
+            query = Event.query.filter_by(location=data_location)
         if data_attendees is not None:    
-            query = Contract.query.filter_by(attendees=data_attendees)
+            query = Event.query.filter_by(attendees=data_attendees)
         if data_contract_id is not None:    
-            query = Contract.query.filter_by(contract_id=data_contract_id)
+            query = Event.query.filter_by(contract_id=data_contract_id)
         if data_support_id is not None:    
-            query = Contract.query.filter_by(support_id=data_support_id)
+            query = Event.query.filter_by(support_id=data_support_id)
             
         return jsonify([event.to_dict() for event in query])
             

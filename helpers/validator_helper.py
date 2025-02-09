@@ -107,7 +107,7 @@ class ValidatorHelper:
         elif self.model_type is ModelTypeEnum.CONTRACT:
             self.shortened_validate_data("costing", float, self.validate_number, 0)
             self.shortened_validate_data("remaining_due_payment", float, self.validate_number, 0)
-            if self.data["signed"]:
+            if self.data.get("signed"):
                 self.type_check(bool, "signed", self.data["signed"])
             self.shortened_validate_data("client_id", int, self.validate_foreign_id, 0, None, ForeignKeyTypeEnum.CLIENT)
             self.shortened_validate_data("commercial_id", int, self.validate_foreign_id, 0, None, ForeignKeyTypeEnum.COMMERCIAL)

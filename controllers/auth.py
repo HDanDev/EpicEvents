@@ -22,7 +22,6 @@ def login():
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
-    """Logs out a user by blacklisting the token."""
     auth_header = request.headers.get('Authorization')
     
     if not auth_header:

@@ -55,12 +55,16 @@ def test_add_event_success(mock_auth, mock_relationship_check, test_client):
 def test_get_events_success(mock_auth, mock_relationship_check, test_client):
     with app.app_context():
         with patch("models.events.Event.query") as mock_query:
+            mock_query.filter_by.return_value = mock_query
+            mock_query.order_by.return_value = mock_query 
             mock_query.all.return_value = [MagicMock(spec=Event, to_dict=lambda: {"id": 1, "name": "Conference", "attendees": 150})]
             
             response = test_client.get("/events")
             assert response.status_code == 200
             assert isinstance(response.json, list)
+            assert len(response.json) == 1
             assert response.json[0]["id"] == 1
+
 
 @patch("helpers.authorize_helper.get_authenticated_collaborator", return_value=(MagicMock(id=1, role_id=RoleEnum.SUPPORT.value), None, None))
 @patch("helpers.authorize_helper.relationship_check_switch", return_value=None)

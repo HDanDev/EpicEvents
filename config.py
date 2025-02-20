@@ -4,8 +4,8 @@ username = os.getenv('DB_USERNAME')
 password = os.getenv('DB_PASSWORD')
 db_name = os.getenv('DB_NAME')
 db_host = os.getenv('DB_HOST')
-db_admin = os.getenv('DB_ADMIN')
-db_admin_password = os.getenv('DB_ADMIN_PASSWORD')
+# db_admin = os.getenv('DB_ADMIN')
+# db_admin_password = os.getenv('DB_ADMIN_PASSWORD')
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY')

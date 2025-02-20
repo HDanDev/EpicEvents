@@ -54,7 +54,9 @@ def get_events(current_collaborator=None):
         data_attendees = request.args.get('attendees')
         data_contract_id = request.args.get('contract_id')
         data_support_id = request.args.get('support_id')
-        query = Event.query.all()
+        order_by = request.args.get('order_by', 'asc')
+        order_field = request.args.get('order_field', 'name')
+        query = Event.query
         
         if data_name is not None:    
             query = Event.query.filter_by(name=data_name)
@@ -70,8 +72,17 @@ def get_events(current_collaborator=None):
             query = Event.query.filter_by(contract_id=data_contract_id)
         if data_support_id is not None:    
             query = Event.query.filter_by(support_id=data_support_id)
-            
-        return jsonify([event.to_dict() for event in query])
+        if hasattr(Event, order_field):
+            order_field_attr = getattr(Event, order_field)
+            if order_by == 'asc':
+                query = query.order_by(order_field_attr.asc())
+            else:
+                query = query.order_by(order_field_attr.desc())
+        else:
+            return jsonify({"error": "Invalid order field"}), 400
+                
+        events = query.all()
+        return jsonify([event.to_dict() for event in events])
             
     events = Event.query.all()
     return jsonify([event.minimal_to_dict() for event in events])
